@@ -1,6 +1,7 @@
 
 repository contains the manuscript, simulation code, and project notes for "How to compare effect sizes".
 
+```
 .
 ├── index.qmd               # Main manuscript
 ├── _quarto.yml             # Manuscript configuration
@@ -12,3 +13,4 @@ repository contains the manuscript, simulation code, and project notes for "How 
 │
 └── notes/
     └── meeting_discussion.Rmd   # Meeting notes and agreements
+```
