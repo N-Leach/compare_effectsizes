@@ -2,13 +2,13 @@
 repository contains the manuscript, simulation code, and project notes for "How to compare effect sizes".
 
 .
-├── index.qmd   # Main manuscript 
-├── _quarto.yml  # manuscript configuration
-├── references.bib 
+├── index.qmd               # Main manuscript
+├── _quarto.yml             # Manuscript configuration
+├── references.bib          # Bibliography
 │
-├── examples/  # code for simulating the examples in the study and explations 
-│   ├── sim.R                 
-│   └── simulate_publication_bias.R  
+├── examples/               # Code for simulating the examples in the study, with explanations
+│   ├── sim.R
+│   └── simulate_publication_bias.R
 │
 └── notes/
-    └── meeting_discussion.Rmd  # Meeting notes and agreements
+    └── meeting_discussion.Rmd   # Meeting notes and agreements
