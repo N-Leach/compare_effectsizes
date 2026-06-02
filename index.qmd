@@ -1,0 +1,404 @@
+---
+title: Do studies really differ? Significance testing and between-study comparisons
+authors:
+  - name: xxx
+    affiliation: The University
+    roles: writing
+    corresponding: true
+  - name: xxx
+    affiliation: The University
+    roles: writing
+    corresponding: false
+  - name: xxx
+    affiliation: The University
+    roles: writing
+    corresponding: false
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    colorlinks: true
+    linestretch: 1.5
+    include-in-header:
+      text: |
+        \usepackage[modulo]{lineno}
+        \linenumbers
+   
+  
+execute: 
+  warning: false
+  message: false
+  
+bibliography: references.bib
+---
+
+# Intro
+
+::: {style="text-align: justify"}
+Effect sizes are rarely interpreted in isolation. Researchers routinely evaluate findings relative to prior studies to determine whether one manipulation produces a stronger effect than another, whether a finding replicates, or whether effects generalize across populations and conditions [@stukas2014; @brandt2014; @moreylakens2016]. Because an effect size quantifies the magnitude of a finding, it enables claims regarding the practical, clinical, or policy implications of research [@kelley2012]. However, a numerical value alone does not determine whether a finding is substantively meaningful.
+
+It has been common practice in psychology to interpret observed effects against Cohen’s benchmarks for “small,” “medium,” or “large” effects [@schäfer2023]. Many experts have dismissed these benchmarks as poor practice, arguing that they should be abandoned altogether [@funder2019; @correll2020] or avoided in favour of more substantive interpretations [@thompson2007]. Alternative recommendations for interpreting effect sizes include comparing the observed effect to a threshold that would matter in practice (Kirk, 1996), comparing it to specific theoretical predictions (Plonsky & Oswald, 2014), or evaluating it in relation to effects observed in other studies [@bakker2019]. As @cohen1988, himself noted, the size of an effect can only be appraised in the context of the substantive issues involved. Consequently, comparisons between effect sizes play a central role in theoretical refinement and the advancement of cumulative science [@moreylakens2016].
+
+However, there is often a disconnect between the goal of comparing effects and application of formal testing to make those comparisons. \<In practice, when researchers conclude that one study produced a larger effect than another, they make these ordinal claims about population effect sizes (e.g., $\text{effect } A > \text{effect } B$) without statistical tests. This approach risks misinterpreting random variation as a true difference between effect sizes (i.e., a Type I error). A particularly salient context in which effect sizes are compared is in replication research. In a review of 50 replication studies published in 2013, Anderson and Maxwell [-@anderson2016] found three studies that relied on simple visual inspection of effect estimates alone without any formal testing parameter differences.\>
+
+\<
+
+\>
+
+\<In replication studies a common approach is to define a successful replication as one where the result of a statistical test leads to the same conclusion as in the original study [@anderson2016; Lakensbook chap.17]. Anderson and Maxwell [-@anderson2016] found that 44 (88%) relied on significance tests alone to determine replication success. However, definition of replication perhaps unintentionally avoids addressing the comparison of the effect size has several limitations.\>
+
+-   First, it only allows for inference about the existence of a replication effect, rather than directly comparing the magnitudes of effects across the studies [@anderson2016].
+
+-   Second, the fact that one result is statistically significant and another is not does not, by itself, justify concluding that the effect estimates differ because one cannot infer a difference between effects solely based on one test crossing a significance threshold while the other does not [@gelman2006].
+
+-   Third, replication studies now typically have much higher power than the original studies [@nosek2022]. As a result, a trivially small effect can reach statistical significance in a large sample, just as a large effect can fail to reach significance in a smaller one [@funder2019].
+
+    -   As a result, even very small effects can be detected as statistically significant , which could lead to the conclusion that the study successfully replicated. However, intuitively, a correlation of 0.01 and one of 0.50 clearly differ in magnitude and practical implications. If a replication identifies an effect that is statistically significant but so small that it is practically negligible or lacks substantive meaning, it is questionable to conclude that the original finding has been meaningfully replicated.
+
+Since the original effect size is intrinsic to the claim, support for that claim requires the replication of the effect’s magnitude, not just its significance. Despite recommendations [@anderson2016; @moreylakens2016; @brandt2014] this standard is rarely applied ().
+
+This applies generally to the comparison of any effect sizes: the critical question is whether differences exceed sampling variability. If so the variation could be explained by possible auxiliary hypotheses (e.g., participants in 2018 differ from participants in 1979), unknown confounds (e.g., experimenter effect), or due to mistakes, bias, or fraud. If there are observed differences between studies, researchers might be interested in exploring the causes of these different effect size estimates. In such cases, researchers are often interested in exploring the causes of these different effect size estimates. Although this process is formally deferred to meta-analyses to allow for systematic moderator testing, it is common for researchers to discuss these differences informally before any such tests are conducted.
+
+(Cumulative) Scientific progress relies on identifying similarities and differences across studies and using these comparisons to refine theories and evaluate empirical claims [@moreylakens2016]. When ordinal claims about effect sizes are based solely on informal comparisons of point estimates, researchers risk drawing conclusions that are not statistically supported. Statistically, evaluating such ordinal claims corresponds to testing whether effect size estimates differ across studies which involves testing hypotheses about the difference between population effect sizes (e.g., $H_0:\theta_1 = \theta_2$, $H_A:\theta_1 \neq \theta_2$​, or better $H_A:\theta_1 > \theta_2$​), rather than informally comparing observed estimates.
+
+In this paper, we examine how ordinal claims about between-study effect sizes can move beyond informal judgement. Specifically, we assess different methodological approaches for testing differences between effect estimates, discuss their assumptions and limitations, and provide guidance for their appropriate use. In addition, we examine the statistical power required to detect differences between effect sizes, highlighting how large both the effect size differences and the sample sizes need to be for such comparisons to be informative. This paper, focuses on comparisons between two studies (e.g., original and replication), rather than full meta-analytic synthesis, although how these approaches relate is discussed.
+:::
+
+# Tests
+
+Consider a $2 \times 2$ between-subjects factorial design in which two factors were manipulated: intervention (control vs. treatment) and context (condition 1 vs. condition 2). Participants were randomly assigned to one of the four cells, and an outcome variable, $y$, was measured. Naturally after the data collection the researchers wish to determine whether the treatment is effective. @tbl-summary presents the descriptive statistics for the control and treatment groups, including the mean difference (D) and Cohen’s d.
+
+```{r}
+#| label: tbl-summary
+
+source("examples/sim.R")
+tab_summary
+```
+
+The researchers concluded that, in Context 1 the treatment produced a large effect, $d = 0.8$, indicating a substantial and practically meaningful difference between intervention groups. A independent-samples t test showed a significant treatment effect in Context 1, `r apa_t(ttest_1)`. In Context 2, in contrast, the treatment showed a small effect, $d = 0.1$, which was not statistically significant, `r apa_t(ttest_2)`.
+
+Seeing these two estimates side by side, one might interpret the results as evidence that the intervention’s effect depends on context. It should go without saying that conclusions about an interaction does not follow from separate tests of simple effects; however, in presenting the reported analyses in this manner invites precisely that misinterpretation. The observed difference in $d$-values are estimates subject to sampling variability, and therefore cannot be treated as fixed quantities for comparison without formal statistical testing. In the same way, a difference between a statistically significant and a non-significant result does not provide evidence of a difference between effects, since significance is a property of the test outcome rather than a direct indicator of effect magnitude [@gelman2006]. To properly claim that the effect of treatment differs across levels of context, one must test the interaction term directly --- most commonly via the Treatment × Context interaction in a two-way ANOVA.
+
+```{r}
+#| label: tbl-anova
+aov_table <- anova(fit)
+rownames(aov_table) <- c("Context", "Treatment", "Context × Treatment", "Residuals")
+
+
+kable(aov_table, 
+      digits = c(0, 0, 2, 2, 3, 3),
+      col.names = c("", "df", "SS", "MS", "$F$", "$p$"),
+      caption = "Two-way ANOVA for performance by treatment and context",
+      align = "lrrrrr")|>
+   kable_styling(latex_options = "hold_position")
+
+
+
+```
+
+The two-way ANOVA showed a significant main effect of Treatment, `r apa_anova(aov_table)["Treatment"]`, but no significant main effect of Context, `r apa_anova(aov_table)["Context"]`, nor of Context × Treatment interaction, `r apa_anova(aov_table)["Context × Treatment"]`. The interaction test does not provide sufficient evidence that the differences reflect a genuine context-dependent effect.Although the observed effect sizes ($d = 0.8$ vs. $d = 0.1$) appear meaningfully different, the interaction test indicates that the observed discrepancy is compatible with sampling variability. The apparent contradiction arises because the comparison of two separate test outcomes is not equivalent to a direct test of the difference between effects. This point well understood in the analysis of factorial designs. But this error frequently appears when effect sizes are compared across independent studies.
+
+In a review of 50 replication studies published in 2013, Anderson and Maxwell [-@anderson2016] found that many studies relied solely on significance testing to determine replication success, with some comparing effect estimates descriptively without formally testing whether the observed effects differed. As the example above illustrates, neither approach is adequate: a numerical difference between two effect sizes is uninformative and the significance of each study does not address whether the two effects differ from each other. Without a direct test of the difference, one cannot determine whether a discrepancy reflects a true failure to replicate or sampling error.
+
+The solution is to stop treating effect sizes as fixed points and instead as estimates with sampling error that must be modelled jointly, so that the observed difference between them is evaluated relative to its uncertainty. In the example above, the ANOVA accounts for this uncertainty by evaluating treatment differences within a common sampling frame using a shared residual variance. The Treatment × Context interaction therefore tests whether the observed difference between effects is larger than would be expected from sampling variability alone. If two studies were methodologically identical replications using the same measures and procedures, the raw data could be pooled and analysed in a single model with Study and Treatment as factors. The Study × Treatment interaction would then test whether treatment effects differed across studies.
+
+------------------------------------------------------------------------
+
+**Not sure if this part is needed or doing anything** This corresponds to a fixed-effects ANOVA. However, in practise independent studies rarely share identical protocols (mixed-effects) nor have sufficiently homogeneous error structures (multilevel) to justify pooling raw data.
+
+As in independent studies rarely share a common estimated error variance; each study contributes its own residual variability and corresponding standard error (i.e. if done on the raw pooled data this is an hierarchical structure the observations are nested by study). As a result, uncertainty cannot be represented adequately by a single pooled error term. Instead, each study contributes its own effect estimate and sampling variance.
+
+\_\_\_\_\_
+
+Typically, when effect sizes are aggregated or compared, researchers do not have access to the raw data from each study. Differences between studies are therefore assessed using tests of between-study heterogeneity evaluating whether observed differences between effect estimates exceed what would be expected from sampling variability. Like in ANOVA, the comparison is made relative to uncertainty, but uncertainty is represented through study-specific sampling variances rather than a shared residual variance.
+
+A heterogeneity test (Cochran’s Q) therefore asks the same question as an fixed-effect ANOVA interaction test—whether observed differences in effects exceed what would be expected from sampling variability alone but under a different error structure. Where the Cochran’s Q statistic, defined as the weighted sum of squared deviations between individual study effect estimates and the pooled effect across studies. Or as @cochran1954 originally framed the problem as: "Do the values of $Y_i$ agree among themselves within the limits of their experimental errors?" While in ANOVA, uncertainty is represented through a pooled residual variance; in meta-analysis, it is represented through study-specific sampling variances combined using inverse-variance weighting [@Borenstein2009]
+
+### Q-test meta-analysis
+
+To generalise let $\theta_i$ be any effect size of interest. From the example above (@tbl-summary), the meta-analyst has two options for which effect size, either $\theta_1$ is the mean difference ($D_1$) or the standardised mean difference (Cohen's $d$, $d_1$). In a meta-analysis the Q statistic is commonly reported in meta-analyses as a test of whether the observed variation in effect sizes exceeds what would be expected from sampling error alone, namely $H_0: Y_i = Y = \theta$ for all $i = 1,..., k$.
+
+$$
+\begin{aligned}
+Q &= \sum_{i=1}^{k} w_i (\theta_i - \bar{\theta}_{\bullet})^2 , \quad \text{if }k=2 \\
+&= w_1 (\theta_1 - \bar{\theta})^2 +  w_2(\theta_2 - \bar{\theta})^2 
+\end{aligned}
+$$ Where $$
+w_i = \frac{1}{v_i} 
+$$ and $$
+\hat{\theta}= \frac{w_1 \theta_1  +  w_2{\theta_2}}{w_1 +w_2} 
+$$
+
+Substituting $$\bar{\theta} = \frac{w_1 \theta_1 + w_2 \theta_2}{w_1 + w_2}$$ into $$
+Q = w_1(\theta_1 - \bar{\theta})^2 + w_2(\theta_2 - \bar{\theta})^2
+$$ the expression simplifies to $$
+Q = \frac{(\theta_1 - \theta_2)^2}{v_1 + v_2}
+$$
+
+This should remind you of the sample z-test
+
+$$
+Z = \frac{\bar{x}- \mu}{\frac{\sigma}{\sqrt{n}}}
+$$
+
+Note that standard error of the mean: $SE = \frac{\sigma}{\sqrt{n}}$ Because the two studies are independent, the sampling variance of the difference between their effect sizes is the sum of their individual sampling variances. This follows the standard result that for two independent estimates,
+
+$$
+Var(\theta_1 - \theta_2) = v_1 +v_2
+$$
+
+$$
+SE = \sqrt{v_1+v_2}
+$$
+
+therefore:
+
+$$
+Z = \frac{\theta_1 - \theta_2}{SE}
+$$
+
+```{r}
+compareES <- function(ES1, ES2, v1, v2){
+  Z <- (ES1 - ES2)/
+    sqrt(v1 + v2)
+  
+  Q <- Z^2 # to compare with metafor Hetrogen. test 
+  p <- 2 * (1 - pnorm(abs(Z)))
+  sprintf("Z_diff = %.4f (Q = %.4f) with p = %.4f", Z, Q, p)
+}
+```
+
+### RAW (UNSTANDARDIZED) MEAN DIFFERENCE D
+
+Consider context 1 from the example above and this is study 1 that reports means for two groups, a treatment and control with true population means $\mu_1$ and $\mu_2$, then the population mean difference is:
+
+$$
+\Delta = \mu_1 - \mu_2
+$$ {#eq-B_4.2}
+
+Assuming the two groups are independent, the study estimates $\Delta$ using the sample mean difference: i.e. $D = \bar{X}_1- \bar{X}_1$.
+
+```{r}
+ex1$D <- with(ex1, (X1 - X2))
+```
+
+Let $S_1$ and $S_2$ be sample standard deviations, $n_1$ and $n_2$ of the two groups.
+
+Let $\sigma^2$ denote the true population variance. If we assume that the population variance is the same in both groups then the variance of $D$ is
+
+$$
+V_D = \frac{n_1 + n_2}{n_1n_2} \cdot S_{p}^2
+$$ {#eq-B_4.3}
+
+where
+
+$$
+S_{p} = \sqrt{\frac{(n_1 - 1)S_1^2 + (n_2 - 1)S_2^2}{n_1 + n_2 - 2}}
+$$ {#eq-B_4.4}
+
+```{r}
+ex1$S_p <- with(ex1, sqrt(((n1 - 1) * S1^2 + (n2 - 1) * S2^2) / (n1 + n2 - 2)))
+```
+
+@Borenstein2009 says "If we don’t assume that the two population standard deviations are the same, then the variance of D is"
+
+$$
+V_D = \frac{S_1^2}{n_1} + \frac{S_2^2}{n_2}
+$$ {#eq-B_4.5}
+
+```{r}
+ex1$v.D <- with(ex1, (S1^2/ n1) +(S2^2/n2))
+```
+
+Under the equal-variance assumption, the common population variance is estimated using the pooled variance:
+
+$$
+V_D = \frac{S_p^2}{n_1} + \frac{S_p^2}{n_2} 
+    = S_p^2 \left( \frac{1}{n_1} + \frac{1}{n_2} \right) 
+    = S_p^2 \cdot \frac{n_1 + n_2}{n_1 n_2} 
+$$
+
+since:
+
+-   $Var(\bar{X}_1 - \bar{X}_2) = Var(\bar{X}_1) + Var(\bar{X}_2) - 2Cov(\bar{X}_1,\bar{X}_2)$ {eq-var.rules}
+
+-   because the two groups are independent $2Cov(\bar{X}_1,\bar{X}_2) =0$
+
+-   $Var(D) = Var(\bar{X}_1 - \bar{X}_2)$
+
+```{r}
+ex1$v.D_pooled <- with(ex1, S_p^2 *((n1 + n2) / (n1 * n2))) 
+
+```
+
+Comparing the results of using the `metafor` package and the Z test Using `escalc` function calculates various effect sizes and their corresponding sampling variances. In each of the cases below it is using the same formulas as defined above
+
+#### unpooled sd
+
+`measure = "MD"`raw mean differences with homoscedastic population variances {#eq-B_4.3}
+
+```{r}
+raw_es <- escalc(measure = "MD",
+                 n1i = n1,
+                 n2i = n2,
+                 m1i = X1,
+                 m2i = X2, 
+                 sd1i = S1,
+                 sd2i = S2, 
+                 data = ex1)
+
+raw_es|> select(D, v.D, yi, vi)|>
+  kable() |>
+  add_header_above(c(
+    "calculations above" = 2,
+    "escalc function" = 2
+  ))|>
+  kable_styling(latex_options = "hold_position")
+
+```
+
+```{r}
+fma.md <- rma(yi, vi, data = raw_es, method = "FE")
+fma.md
+```
+
+```{r}
+# Z-test
+compareES(ES1 = ex1$D[1], 
+          ES2 = ex1$D[2], 
+          v1 = ex1$v.D[1], 
+          v2 = ex1$v.D[2])
+
+```
+
+#### pooled sd
+
+```{r}
+# Z-test
+compareES(ES1 = ex1$D[1], 
+          ES2 = ex1$D[2], 
+          v1 = ex1$v.D_pooled[1], 
+          v2 = ex1$v.D_pooled[2])
+```
+
+**(In @Borenstein2009 this is exactly true I will fix this later so that it is)**
+
+The formulas (4.3) and (4.5) give identical results, @Borenstein2009 points out that this only happens when the sample sizes and variance estimates are equal across the two groups. Note observed sample variances differ $(S1^2 \ne S2^2)$, But because the group sample sizes are equal (n1 = n2), the pooled variance estimator simplifies to the average of the two sample variances, making the pooled and unpooled formulas algebraically equivalent.
+
+## STANDARDIZED MEAN DIFFERENCE
+
+When studies measure the same construct using different continuous scales, the raw mean difference is not directly comparable across studies (i.e., outcome measures across studies are all linear transformations of one another). In this case, the effect can be standardized by dividing the mean difference by the within-group standard deviation. Assuming equal population standard deviations ($\sigma_1 = \sigma_2 = \sigma$), the population standardized mean difference is:
+
+$$
+\delta = \frac{\mu_1 - \mu_2}{\sigma}
+$$ {#eq-B_4.17}
+
+from studies that used two independent groups the standardized mean difference ($\delta$) is estimated with:
+
+$$ 
+d = \frac{\bar{X}_1 - \bar{X}_2}{S_p} 
+$$ {#eq-B_4.18}
+
+-\> $S_p$ here is the same pooled mean as calculated above #eq-B_4.4
+
+```{r}
+ex1$d  <- with(ex1, D/S_p)
+```
+
+#### Estimating the standard error of Cohens d
+
+In the numerator, $\bar{X}_1$ and $\bar{X}_2$ are the sample means in the two groups. In the denominator $S_p$ is the within-groups standard deviation, pooled across groups,
+
+The variance of $d$ has two components:
+
+$$ 
+V_d = \underbrace{\frac{n_1 + n_2}{n_1 n_2}}_{\text{uncertainty in } \bar{X}_1 - \bar{X}_2} + \underbrace{\frac{d^2}{2(n_1 + n_2)}}_{\text{uncertainty in } S_p} 
+$$ {#eq-B_4.20}
+
+(1) Uncertainty in the mean difference: If the population standard deviation $\sigma$ was known then:
+
+$d_{\sigma} = (\bar{X}_1 - \bar{X}_2) / \sigma  = \frac{1}{\sigma} (\bar{X}_1 - \bar{X}_2)$
+
+"The variance of a random variable changes in a simple way under linear transformations." (Rice, 2007, p131) Variance rule for a constant times a random variable (Rice, 2007, Section 4.2, Theorem A, p. 131): if $Y = a + bX$ where a and b are constants and $Var(X)\neq 0$ then $Var(Y) = b^2Var(X)$
+
+$$ 
+\begin{aligned}
+\text{Var}(d_\sigma) &= \frac{1}{\sigma^2} \cdot \text{Var}(\bar{X}_1 - \bar{X}_2) \quad \text{(Theorem A, Sec 4.2)} 
+\\
+&= \frac{1}{\sigma^2} \cdot \big[ \text{Var}(\bar{X}_1) + \text{Var}(\bar{X}_2) \big] \quad \text{this follows from {eq-var.rules}}
+\\
+&= \frac{1}{\sigma^2} \cdot \left( \frac{\sigma^2}{n_1} + \frac{\sigma^2}{n_2} \right)  
+\\
+&= \frac{1}{\sigma^2} \cdot \sigma^2 \left( \frac{1}{n_1} + \frac{1}{n_2} \right) 
+\\
+&= \frac{1}{n_1} + \frac{1}{n_2} = \frac{n_1 + n_2}{n_1 n_2}
+\end{aligned} 
+$$
+
+In practice, the population standard deviation $\sigma$ is unknown and must be estimated using $S_p$. This means that $d$ is not only affected by sampling variability in the mean difference, but also by sampling variability in the denominator $S_p$. This second source of variability arises from the fact that d is a ratio estimator rather than a simple linear transformation of the sample means. An approximate expression due to estimating $S_p$ is
+
+$$
+\frac{d^2}{2(n_1 + n_2)} 
+$$
+
+```{r}
+ex1$v.d <- with(ex1, (n1 + n2) / (n1 * n2) +
+                    (d^2) / (2 * (n1 + n2)))
+```
+
+------------------------------------------------------------------------
+
+still working on how to explain this
+
+-   <https://metricgate.com/docs/taylor-series-linearization/>
+
+-   Cumming, 2012: chapter 11 has a point about the cohens d having a non-central t-distribution, I think a more intuitive explanation is there but I am still thinking about it.
+
+------------------------------------------------------------------------
+
+"SMD" for the standardized mean difference
+
+```{r}
+smd_es <- escalc(measure = "SMD",
+                 correct = FALSE, # {#eq-B_4.20} otherwise Hedges'g correction applied
+                 n1i = n1,
+                 n2i = n2,
+                 di = d, 
+                 data = ex1)
+
+
+smd_es|> select(d, v.d, yi, vi)|>
+  kable() |>
+  add_header_above(c(
+    "calculations above" = 2,
+    "escalc function" = 2
+  ))|>
+  kable_styling(latex_options = "hold_position")
+
+
+```
+
+```{r}
+fma.smd_es <- rma(yi, vi, data = smd_es, method = "FE")
+fma.smd_es
+```
+
+```{r}
+# Z-test
+compareES(ES1 = ex1$d[1], 
+          ES2 = ex1$d[2], 
+          v1 = ex1$v.d[1], 
+          v2 = ex1$v.d[2])
+```
+
+# Examples
+
+# Consider Power
+
+# Equivalence Testing (TOST)
+
+4.\
+4.1 Motivation\
+4.2 Hypotheses\
+4.3 Interpretation\
+4.4 Choosing Δ

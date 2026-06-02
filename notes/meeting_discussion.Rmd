@@ -1,0 +1,18 @@
+---
+title: "meeting_discussion"
+output: html_document
+---
+
+# 29th May
+
+outline added to paper git repo made
+
+How to orgniase examples
+
+1.  Example 1: Different SDs: choosing effect metrics: mean difference vs cohen's d
+
+2.  Example 2: True null apparent differences from sampling error
+
+3.  Example 3: Small true effect + publication bias → inflated original estimates
+
+4.  Example 4 Small observed difference → equivalence testing
