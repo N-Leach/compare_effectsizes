@@ -1,14 +1,12 @@
-library(tidyverse)
-library(kableExtra)
-library(metafor)
 
 set.seed(123)
 
 # simulating 
 #y_{ij} = \beta_0 + \beta_1 \text{study}_{ij} + \beta_2 \text{treatment}_{ij}  + \beta_3(\text{study}_{ij} \cdot \text{treatment}_{ij}) + \epsilon \quad \epsilon_{ij} \sim N(0, v_{ij})
 
-run_sim <- function(n1 = 50, n2 = 50, n_sims, beta0 = 0, beta1 = 0, beta2 = 0,
-                    sigma = 1, seed = 137) {
+run_sim <- function(n1 = 50, n2 = 50, n_sims, 
+                    beta0 = 100, beta1 = 0, beta2 = 0, beta3 = 0,
+                    sigma = 10, seed = 137) {
   
   set.seed(seed)
   seeds <- sample.int(1e6, n_sims)
@@ -17,9 +15,9 @@ run_sim <- function(n1 = 50, n2 = 50, n_sims, beta0 = 0, beta1 = 0, beta2 = 0,
   # (1) Raw data
   df_raw <- do.call(rbind, lapply(seq_len(n_sims), function(i) {
     set.seed(seeds[i])
-    study     <- rep(0:1, c(n1, n2))
+    study <- rep(0:1, c(n1, n2))
     treatment <- rep(rep(0:1, each = n1 / 2), 2)
-    y         <- beta0 + beta1 * study + beta2 * treatment + rnorm(n, 0, sigma)
+    y <- beta0 + beta1 * study + beta2 * treatment + beta3 * study * treatment + rnorm(n, 0, sigma)
     data.frame(seed = seeds[i], study = study, treatment = treatment, y = y)
   }))
   
@@ -44,8 +42,15 @@ run_sim <- function(n1 = 50, n2 = 50, n_sims, beta0 = 0, beta1 = 0, beta2 = 0,
     m  <- lm(y ~ study * treatment, data = df_raw[df_raw$seed == s, ])
     sm <- summary(m)$coefficients
     data.frame(
-      seed          = s,
-      p_treatment   = sm["treatment", "Pr(>|t|)"],
+      seed = s,
+      treatment_est = sm["treatment","Estimate"],
+      treatment_p = sm["treatment", "Pr(>|t|)"],
+      
+      study_est = sm["treatment","Estimate"],
+      study_treatment = sm["treatment", "Pr(>|t|)"],
+      
+      interaction_est = sm["study:treatment","Estimate"],
+      interaction_se = sm["study:treatment","Std. Error"],
       p_interaction = sm["study:treatment", "Pr(>|t|)"]
     )
   }))
@@ -56,42 +61,23 @@ run_sim <- function(n1 = 50, n2 = 50, n_sims, beta0 = 0, beta1 = 0, beta2 = 0,
 
 
 res <- run_sim(n_sims = 100)
+results_p <- res$p_values
 
-s <- subset(res$raw_dat, seed == 65241)
-fit <- lm(y ~ study * treatment, data = s)
+s <- subset(res$raw_dat, seed == 65241) 
+fit <- lm(y ~ treatment * study, data = s)
 
 
+summary(fit)
 
 example1 <- subset(res$summary,seed == 65241)
+example1$study <- factor(example1$study, levels = c(0,1), labels = c(1,2))
 
-ex1 <- data.frame(X1 = example1$m_0,
-                   X2 = example1$m_1, 
-                   S1 = example1$sd_0,
-                   S2 = example1$sd_1,
-                   n1 = example1$n_0,
-                   n2 = example1$n_1)
-
-
-
-tab_summary <- example1|>
-  select(study,n_0, m_0,sd_0, n_1, m_1, sd_1, D, d) |> 
-  mutate(across(where(is.numeric), round, 3)) |>
-  kable(
-    align = "lcccccccc",
-    col.names = c(
-      "Context",
-      "n", "Mean", "SD",
-      "n", "Mean", "SD",
-      "D", "d"
-    )
-  ) |>
-  add_header_above(c(
-    "     " = 1,
-    "Control" = 3,
-    "Treatment" = 3,
-    " " = 2
-  ))|>
-  kable_styling(latex_options = "hold_position")
+ex1 <- data.frame(M_C = example1$m_0,
+                  M_T = example1$m_1,
+                  S_C = example1$sd_0,
+                  S_T = example1$sd_1,
+                  n_C = example1$n_0,
+                  n_T = example1$n_1)
 
 
 # for example 1 narrative 
@@ -102,7 +88,6 @@ ttest_2  <- t.test(y~treatment, var.equal= TRUE,
                    data = subset(s, subset = study == 1))
 
 # functions from Ellydee
-
 apa_t <- function(t_test_obj) {
   sprintf("t(%d) = %.2f, p %s",
           t_test_obj$parameter,

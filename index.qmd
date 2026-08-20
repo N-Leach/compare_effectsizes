@@ -1,293 +1,859 @@
 ---
-title: Do studies really differ? Significance testing and between-study comparisons
+title: Do effects really differ? Significance testing and between-study comparisons
 authors:
-  - name: xxx
-    affiliation: The University
+  - name: Nina M. Leach
+    affiliation: Human-Technology Interaction Group, Eindhoven University of Technology
     roles: writing
     corresponding: true
-  - name: xxx
-    affiliation: The University
+  - name: Antal Haans
     roles: writing
     corresponding: false
-  - name: xxx
-    affiliation: The University
+  - name: Daniel Lakens
     roles: writing
     corresponding: false
-format:
-  pdf:
-    toc: true
-    number-sections: true
-    colorlinks: true
-    linestretch: 1.5
-    include-in-header:
-      text: |
-        \usepackage[modulo]{lineno}
-        \linenumbers
-   
-  
-execute: 
-  warning: false
-  message: false
-  
+
+csl: apa.csl
 bibliography: references.bib
 ---
 
-# Intro
+```{r}
+#| include: false
+#| echo: false
+#| warning: false
+#| message: false
+
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(kableExtra)
+  library(metafor)
+  library(ggrepel)
+  library(RColorBrewer) # plot colours 
+})
+# global settings 
+## NA are blank 
+options(knitr.kable.NA = "")
+
+## plot theme 
+theme_set(theme_bw() +
+            theme(panel.border = element_blank(),
+                  axis.line = element_line(colour = "grey")))
+
+
+```
 
 ::: {style="text-align: justify"}
-Effect sizes are rarely interpreted in isolation. Researchers routinely evaluate findings relative to prior studies to determine whether one manipulation produces a stronger effect than another, whether a finding replicates, or whether effects generalize across populations and conditions [@stukas2014; @brandt2014; @moreylakens2016]. Because an effect size quantifies the magnitude of a finding, it enables claims regarding the practical, clinical, or policy implications of research [@kelley2012]. However, a numerical value alone does not determine whether a finding is substantively meaningful.
+To move on from the concern about whether a phenomenon exists to the magnitude of the observed effect requires researchers to interpret effect sizes. Effect sizes provide information about the strength of a relationship or the magnitude of an intervention, therefore are necessary for evaluating importance of research findings, developing theories, planning future studies, and accumulating evidence [@kelley2012; @lakens2013; @kirk1996]. However, the numerical value of an effect is not self-interpreting, as Cohen observed, “the size of an effect can only be appraised in the context of the substantive issues involved” [@cohen1988, p. 534].
 
-It has been common practice in psychology to interpret observed effects against Cohen’s benchmarks for “small,” “medium,” or “large” effects [@schäfer2023]. Many experts have dismissed these benchmarks as poor practice, arguing that they should be abandoned altogether [@funder2019; @correll2020] or avoided in favour of more substantive interpretations [@thompson2007]. Alternative recommendations for interpreting effect sizes include comparing the observed effect to a threshold that would matter in practice (Kirk, 1996), comparing it to specific theoretical predictions (Plonsky & Oswald, 2014), or evaluating it in relation to effects observed in other studies [@bakker2019]. As @cohen1988, himself noted, the size of an effect can only be appraised in the context of the substantive issues involved. Consequently, comparisons between effect sizes play a central role in theoretical refinement and the advancement of cumulative science [@moreylakens2016].
+Effect sizes can be contextualised in several ways. Researchers may evaluate whether an effect is large enough to have practical consequences [@kirk1996], by comparing it with the distribution of effects reported in a research area [@morris2013] \thought{also Benet Glaser and Quentana paper?}, or compare it directly with effects obtained in related studies [@cohen1988; @stukas2014]. The latter comparison is particularly important when researchers ask whether one manipulation produces a stronger effect than another, whether an effect generalises across populations, or whether a replication reproduces an original finding [@brandt2014; @anderson2016]. Such comparisons are essential for theories that predict changes in effect magnitude, since a sufficiently specified theory should indicate not only whether an effect exists, but also whether and by how much it changes across relevant conditions (Meehl?).
 
-However, there is often a disconnect between the goal of comparing effects and application of formal testing to make those comparisons. \<In practice, when researchers conclude that one study produced a larger effect than another, they make these ordinal claims about population effect sizes (e.g., $\text{effect } A > \text{effect } B$) without statistical tests. This approach risks misinterpreting random variation as a true difference between effect sizes (i.e., a Type I error). A particularly salient context in which effect sizes are compared is in replication research. In a review of 50 replication studies published in 2013, Anderson and Maxwell [-@anderson2016] found three studies that relied on simple visual inspection of effect estimates alone without any formal testing parameter differences.\>
+Given this need, researchers frequently compare estimates [@anderson2016; @humphreys1980; @brignardello-petersen2016]. Since observed effects are estimates subject to sampling variation a numerical difference between two estimates alone is not evidence that the underlying effects differ. However, researchers sometimes make this conclusion, or relay on inferring a difference if one effect is statistically significant and the other is not [@humphreys1980; @gelman2006; @nieuwenhuis2011]. This issue has long been recognised. Humphreys described the comparison of separate significance outcomes as “common practice by authors in psychological journals” [@humphreys1980, p. 71]. The same error is seen within-study comparisons [@gelman2006; @nieuwenhuis2011] and between-study comparisons [@anderson2016; @humphreys1980; @brignardello-petersen2016].
 
-\<
+Between-study effect comparisons have received renewed attention because of concerns of reproducibility resulting in substantial literature on how replication studies should be designed, analysed, and interpreted. This includes guidance for conducting informative and convincing replications [see @brandt2014] and taxonomies requiring researchers to specify the inferential question that a replication is intended to answer [see @anderson2016; @kondzic2026].For example, Anderson and Maxwell [-@anderson2016] distinguish six goals: (Goal 1) to infer the existence of an effect in the replication, (Goal 2) to infer that the replication effect is practically null, (Goal 3) to estimate the replication effect precisely, (Goal 4) to combine the original and replication results, (Goal 5) to assess whether the replication effect is clearly inconsistent with the original effect, and (Goal 6) to assess whether the two effects are sufficiently similar to be considered consistent.
 
-\>
+Of these goals, Goal 5 and 6 are required when the magnitude of the effect is treated as part of the original study's claim. For this goal a replication should examine whether the replication estimate is consistent/inconsistent with the original estimate [@brandt2014; @anderson2016; @lakens2026]. These goals extend beyond testing a replication to an original study. To make this claim requires a direct test of whether the discrepancy between the estimates is larger than would be expected from sampling variation.
 
-\<In replication studies a common approach is to define a successful replication as one where the result of a statistical test leads to the same conclusion as in the original study [@anderson2016; Lakensbook chap.17]. Anderson and Maxwell [-@anderson2016] found that 44 (88%) relied on significance tests alone to determine replication success. However, definition of replication perhaps unintentionally avoids addressing the comparison of the effect size has several limitations.\>
+(when effects a compared correctly) The most commonly used method the z-test (Wald test) [@brignardello-petersen2016; @heyard2025; @kondzic2026; @hedges2019]. For example, Brignardello-Petersen and colleagues [-@brignardello-petersen2016] found that 12 of 26 studies used a z-test to determine whether estimates obtained from different study designs differed beyond chance. The method itself is not new or complex. @humphreys1980 and @rosenthal1982 presented effect estimates between independent studies, and Rosenthal and Rubin. More recently in the context of assessing replication the same procedure have been discussed[@anderson2016; @hedges2019; @kondzic2026].
 
--   First, it only allows for inference about the existence of a replication effect, rather than directly comparing the magnitudes of effects across the studies [@anderson2016].
-
--   Second, the fact that one result is statistically significant and another is not does not, by itself, justify concluding that the effect estimates differ because one cannot infer a difference between effects solely based on one test crossing a significance threshold while the other does not [@gelman2006].
-
--   Third, replication studies now typically have much higher power than the original studies [@nosek2022]. As a result, a trivially small effect can reach statistical significance in a large sample, just as a large effect can fail to reach significance in a smaller one [@funder2019].
-
-    -   As a result, even very small effects can be detected as statistically significant , which could lead to the conclusion that the study successfully replicated. However, intuitively, a correlation of 0.01 and one of 0.50 clearly differ in magnitude and practical implications. If a replication identifies an effect that is statistically significant but so small that it is practically negligible or lacks substantive meaning, it is questionable to conclude that the original finding has been meaningfully replicated.
-
-Since the original effect size is intrinsic to the claim, support for that claim requires the replication of the effect’s magnitude, not just its significance. Despite recommendations [@anderson2016; @moreylakens2016; @brandt2014] this standard is rarely applied ().
-
-This applies generally to the comparison of any effect sizes: the critical question is whether differences exceed sampling variability. If so the variation could be explained by possible auxiliary hypotheses (e.g., participants in 2018 differ from participants in 1979), unknown confounds (e.g., experimenter effect), or due to mistakes, bias, or fraud. If there are observed differences between studies, researchers might be interested in exploring the causes of these different effect size estimates. In such cases, researchers are often interested in exploring the causes of these different effect size estimates. Although this process is formally deferred to meta-analyses to allow for systematic moderator testing, it is common for researchers to discuss these differences informally before any such tests are conducted.
-
-(Cumulative) Scientific progress relies on identifying similarities and differences across studies and using these comparisons to refine theories and evaluate empirical claims [@moreylakens2016]. When ordinal claims about effect sizes are based solely on informal comparisons of point estimates, researchers risk drawing conclusions that are not statistically supported. Statistically, evaluating such ordinal claims corresponds to testing whether effect size estimates differ across studies which involves testing hypotheses about the difference between population effect sizes (e.g., $H_0:\theta_1 = \theta_2$, $H_A:\theta_1 \neq \theta_2$​, or better $H_A:\theta_1 > \theta_2$​), rather than informally comparing observed estimates.
-
-In this paper, we examine how ordinal claims about between-study effect sizes can move beyond informal judgement. Specifically, we assess different methodological approaches for testing differences between effect estimates, discuss their assumptions and limitations, and provide guidance for their appropriate use. In addition, we examine the statistical power required to detect differences between effect sizes, highlighting how large both the effect size differences and the sample sizes need to be for such comparisons to be informative. This paper, focuses on comparisons between two studies (e.g., original and replication), rather than full meta-analytic synthesis, although how these approaches relate is discussed.
-:::
-
-# Tests
-
-Consider a $2 \times 2$ between-subjects factorial design in which two factors were manipulated: intervention (control vs. treatment) and context (condition 1 vs. condition 2). Participants were randomly assigned to one of the four cells, and an outcome variable, $y$, was measured. Naturally after the data collection the researchers wish to determine whether the treatment is effective. @tbl-summary presents the descriptive statistics for the control and treatment groups, including the mean difference (D) and Cohen’s d.
-
-```{r}
-#| label: tbl-summary
-
-source("examples/sim.R")
-tab_summary
-```
-
-The researchers concluded that, in Context 1 the treatment produced a large effect, $d = 0.8$, indicating a substantial and practically meaningful difference between intervention groups. A independent-samples t test showed a significant treatment effect in Context 1, `r apa_t(ttest_1)`. In Context 2, in contrast, the treatment showed a small effect, $d = 0.1$, which was not statistically significant, `r apa_t(ttest_2)`.
-
-Seeing these two estimates side by side, one might interpret the results as evidence that the intervention’s effect depends on context. It should go without saying that conclusions about an interaction does not follow from separate tests of simple effects; however, in presenting the reported analyses in this manner invites precisely that misinterpretation. The observed difference in $d$-values are estimates subject to sampling variability, and therefore cannot be treated as fixed quantities for comparison without formal statistical testing. In the same way, a difference between a statistically significant and a non-significant result does not provide evidence of a difference between effects, since significance is a property of the test outcome rather than a direct indicator of effect magnitude [@gelman2006]. To properly claim that the effect of treatment differs across levels of context, one must test the interaction term directly --- most commonly via the Treatment × Context interaction in a two-way ANOVA.
-
-```{r}
-#| label: tbl-anova
-aov_table <- anova(fit)
-rownames(aov_table) <- c("Context", "Treatment", "Context × Treatment", "Residuals")
-
-
-kable(aov_table, 
-      digits = c(0, 0, 2, 2, 3, 3),
-      col.names = c("", "df", "SS", "MS", "$F$", "$p$"),
-      caption = "Two-way ANOVA for performance by treatment and context",
-      align = "lrrrrr")|>
-   kable_styling(latex_options = "hold_position")
-
-
-
-```
-
-The two-way ANOVA showed a significant main effect of Treatment, `r apa_anova(aov_table)["Treatment"]`, but no significant main effect of Context, `r apa_anova(aov_table)["Context"]`, nor of Context × Treatment interaction, `r apa_anova(aov_table)["Context × Treatment"]`. The interaction test does not provide sufficient evidence that the differences reflect a genuine context-dependent effect.Although the observed effect sizes ($d = 0.8$ vs. $d = 0.1$) appear meaningfully different, the interaction test indicates that the observed discrepancy is compatible with sampling variability. The apparent contradiction arises because the comparison of two separate test outcomes is not equivalent to a direct test of the difference between effects. This point well understood in the analysis of factorial designs. But this error frequently appears when effect sizes are compared across independent studies.
-
-In a review of 50 replication studies published in 2013, Anderson and Maxwell [-@anderson2016] found that many studies relied solely on significance testing to determine replication success, with some comparing effect estimates descriptively without formally testing whether the observed effects differed. As the example above illustrates, neither approach is adequate: a numerical difference between two effect sizes is uninformative and the significance of each study does not address whether the two effects differ from each other. Without a direct test of the difference, one cannot determine whether a discrepancy reflects a true failure to replicate or sampling error.
-
-The solution is to stop treating effect sizes as fixed points and instead as estimates with sampling error that must be modelled jointly, so that the observed difference between them is evaluated relative to its uncertainty. In the example above, the ANOVA accounts for this uncertainty by evaluating treatment differences within a common sampling frame using a shared residual variance. The Treatment × Context interaction therefore tests whether the observed difference between effects is larger than would be expected from sampling variability alone. If two studies were methodologically identical replications using the same measures and procedures, the raw data could be pooled and analysed in a single model with Study and Treatment as factors. The Study × Treatment interaction would then test whether treatment effects differed across studies.
+In practise the literature on replication is much messier, in a review of 97 methodological papers, @heyard2025 extracted 50 metrics that "measure reproducibility". Outside of replications @brignardello-petersen2016, did a review of methods used to assess whether effect estimates from different study were different from each other. In the sample of 26 studies, the review identified 24 distinct comparison criteria—almost one criterion per study, only 14 of the criteria were found to be appropriate.
 
 ------------------------------------------------------------------------
 
-**Not sure if this part is needed or doing anything** This corresponds to a fixed-effects ANOVA. However, in practise independent studies rarely share identical protocols (mixed-effects) nor have sufficiently homogeneous error structures (multilevel) to justify pooling raw data.
+(I think this leads to why the literature is in consistent... which is not the plan we have)
 
-As in independent studies rarely share a common estimated error variance; each study contributes its own residual variability and corresponding standard error (i.e. if done on the raw pooled data this is an hierarchical structure the observations are nested by study). As a result, uncertainty cannot be represented adequately by a single pooled error term. Instead, each study contributes its own effect estimate and sampling variance.
+I wanted to say "one frequently overlooked limitation of difference tests/ heterogeneity tests is the limited information that two studies can provide." but I am not sure it is overlooked: @anderson2024: "Readers may, however, notice that a seemingly attractive goal is missing, one which answers the question of whether the original and replication study effect sizes are equal, which can be done using a hypothesis test (meta-analytic Q-test) or a CI for a difference in effect sizes. Indeed, analysis procedures to achieve this goal have been described (Anderson & Maxwell, 2016; Bonett, 2009; Schauer & Hedges, 2021). However, given that (a) this uses an often unattainable exact definition of replication due to multiple sources of heterogeneity..." @kondzic2026 also mention the sample sizes needed, they just seem to overlook that 300 participants is a lot. and @anderson2016 :“the difficulty of finding a significant difference between two studies unless both studies have large enough sample sizes.”
 
-\_\_\_\_\_
+and what @hedges2019 is saying is two studies cannot have enough information to distinguish small differences in effect parameters: 2 studies are insufficient for inference about replication.
 
-Typically, when effect sizes are aggregated or compared, researchers do not have access to the raw data from each study. Differences between studies are therefore assessed using tests of between-study heterogeneity evaluating whether observed differences between effect estimates exceed what would be expected from sampling variability. Like in ANOVA, the comparison is made relative to uncertainty, but uncertainty is represented through study-specific sampling variances rather than a shared residual variance.
+*Maybe the discussion should be when is there a point really to compare two effect sizes* And it feels like the answer is almost never. We argue that researchers often infer that effects differ by comparing point estimates or separate significance tests, rather than directly testing the difference. But, even when the statistically correct difference or equivalence test is/would be used realistic differences need very large samples.
 
-A heterogeneity test (Cochran’s Q) therefore asks the same question as an fixed-effect ANOVA interaction test—whether observed differences in effects exceed what would be expected from sampling variability alone but under a different error structure. Where the Cochran’s Q statistic, defined as the weighted sum of squared deviations between individual study effect estimates and the pooled effect across studies. Or as @cochran1954 originally framed the problem as: "Do the values of $Y_i$ agree among themselves within the limits of their experimental errors?" While in ANOVA, uncertainty is represented through a pooled residual variance; in meta-analysis, it is represented through study-specific sampling variances combined using inverse-variance weighting [@Borenstein2009]
+-   should the point of the paper be that we should move away from pairwise judgements of equality or difference? move to: meta-analysis, meta-regression, individual-participant-data meta-analysis, network meta-regression and dose–effect network meta-analysis
 
-### Q-test meta-analysis
+------------------------------------------------------------------------
 
-To generalise let $\theta_i$ be any effect size of interest. From the example above (@tbl-summary), the meta-analyst has two options for which effect size, either $\theta_1$ is the mean difference ($D_1$) or the standardised mean difference (Cohen's $d$, $d_1$). In a meta-analysis the Q statistic is commonly reported in meta-analyses as a test of whether the observed variation in effect sizes exceeds what would be expected from sampling error alone, namely $H_0: Y_i = Y = \theta$ for all $i = 1,..., k$.
+### point of the paper:
 
-$$
-\begin{aligned}
-Q &= \sum_{i=1}^{k} w_i (\theta_i - \bar{\theta}_{\bullet})^2 , \quad \text{if }k=2 \\
-&= w_1 (\theta_1 - \bar{\theta})^2 +  w_2(\theta_2 - \bar{\theta})^2 
-\end{aligned}
-$$ Where $$
-w_i = \frac{1}{v_i} 
-$$ and $$
-\hat{\theta}= \frac{w_1 \theta_1  +  w_2{\theta_2}}{w_1 +w_2} 
-$$
+(1) explicit connection between interaction tests, comparisons of independent estimates, and two-study heterogeneity tests. we demonstrate a tests for interaction (from e.g. an ANOVA), tests comparing independent effect estimates, and the heterogeneity test used in meta-analysis are all implementations of the same statistical question: whether observed differences between effects are larger than expected from sampling variability.
 
-Substituting $$\bar{\theta} = \frac{w_1 \theta_1 + w_2 \theta_2}{w_1 + w_2}$$ into $$
-Q = w_1(\theta_1 - \bar{\theta})^2 + w_2(\theta_2 - \bar{\theta})^2
-$$ the expression simplifies to $$
-Q = \frac{(\theta_1 - \theta_2)^2}{v_1 + v_2}
-$$
+(2) provides guidance for estimating and testing effect-size differences and equivalence.
 
-This should remind you of the sample z-test
+(3) quantifies the precision required for these comparisons and the limits imposed by imprecise original studies: i.e. examine the statistical power required to detect differences between effects, highlighting how large both the effect differences and the sample sizes must be for such comparisons to be informative.
 
-$$
-Z = \frac{\bar{x}- \mu}{\frac{\sigma}{\sqrt{n}}}
-$$
+(4) it examines what pairwise comparisons can establish.
 
-Note that standard error of the mean: $SE = \frac{\sigma}{\sqrt{n}}$ Because the two studies are independent, the sampling variance of the difference between their effect sizes is the sum of their individual sampling variances. This follows the standard result that for two independent estimates,
+# Testing interactions
 
-$$
-Var(\theta_1 - \theta_2) = v_1 +v_2
-$$
-
-$$
-SE = \sqrt{v_1+v_2}
-$$
-
-therefore:
-
-$$
-Z = \frac{\theta_1 - \theta_2}{SE}
-$$
+Consider a $2 \times 2$ between-subjects factorial design in which two factors were manipulated: intervention (control vs. treatment) and context (context 1 vs. context 2). Participants were randomly assigned to one of the four cells, and an outcome variable measured. Naturally after the data collection the researchers wish to determine whether the treatment is effective.
 
 ```{r}
-compareES <- function(ES1, ES2, v1, v2){
-  Z <- (ES1 - ES2)/
-    sqrt(v1 + v2)
-  
-  Q <- Z^2 # to compare with metafor Hetrogen. test 
-  p <- 2 * (1 - pnorm(abs(Z)))
-  sprintf("Z_diff = %.4f (Q = %.4f) with p = %.4f", Z, Q, p)
-}
+#| label: tbl-summary
+#| tbl-cap: Where M is the group mean, n the sample size, SD the standard deviation, D the raw mean difference between groups, and d is Cogen's d.
+
+source("examples/sim.R")
+tab_summary <- example1 |>
+  select(study, n_1, m_1, sd_1, n_0, m_0, sd_0, D, d) |>
+  mutate(across(where(is.numeric), \(x) round(x, 2))) |>
+  kable(
+    booktabs = TRUE,
+    align = "rrrrrrrrr",
+    escape = FALSE,
+    col.names = c(
+      "Context",
+      "$n_T$", "$M_T$", "$SD_T$",
+      "$n_C$", "$M_C$", "$SD_C$",
+      "$D$", "$d$"
+    )
+  ) |>
+  add_header_above(c("     " = 1, "Treatment" = 3, "Control" = 3, " " = 2), 
+                   escape = FALSE) |>
+  kable_styling(latex_options = "hold_position") 
+tab_summary
+
 ```
 
-### RAW (UNSTANDARDIZED) MEAN DIFFERENCE D
+Using Cohen's d, the researchers concluded that, in Context 1 the treatment produced a large effect, $d = 0.8$, indicating a large difference between intervention groups. A independent-samples t-test showed a significant treatment effect in Context 1, `r apa_t(ttest_1)`. In Context 2, in contrast, the treatment showed a small effect, $d = 0.1$, which was not statistically significant, `r apa_t(ttest_2)`.
 
-Consider context 1 from the example above and this is study 1 that reports means for two groups, a treatment and control with true population means $\mu_1$ and $\mu_2$, then the population mean difference is:
+Seeing these two estimates side by side, one might interpret the results as evidence that the intervention’s effect depends on context. While it should go without saying that conclusions about an interaction does not follow from separate tests of main effect, presenting the reported analyses in this manner invites precisely this misinterpretation. In a review of 157 neuroscience articles, @nieuwenhuis2011 found that researchers used separate significance tests in place of a interaction test about as frequently as they used the correct procedure.
+
+The observed effect sizes (i.e. $D_{1}$ and $D_{2}$) are estimates subject to sampling variability, and therefore, cannot be treated as fixed quantities for comparison without formal statistical testing. In the same way, a difference between a statistically significant and a non-significant result does not provide evidence of a difference between effects, since significance is a property of the test outcome rather than a direct indicator of effect magnitude [@gelman2006]. To properly claim that the effect of treatment differs across levels of context, one must test the interaction term directly --- most commonly via the Treatment × Context interaction in a two-way ANOVA.
+
+```{r}
+#| label: tbl-anova
+#| tbl-cap: "Two-way ANOVA for performance by treatment and context"
+
+aov_table <- anova(fit)
+rownames(aov_table) <- c("Treatment", "Context", "Context × Treatment", "Residuals")
+
+kable(aov_table, 
+      digits = c(0, 2, 2, 2, 3),
+      col.names = c("", "df", "SS", "MS", "F", "p"),
+      align = "rrrrr")|>
+   kable_styling(latex_options = "hold_position")
+
+
+```
+
+The two-way ANOVA showed a significant main effect of Treatment, `r apa_anova(aov_table)["Context"]`, but no significant main effect of Context, `r apa_anova(aov_table)["Treatment"]`, nor of Context × Treatment interaction, `r apa_anova(aov_table)["Context × Treatment"]`[^1]. The interaction test does not provide sufficient evidence that the differences reflect a genuine context-dependent effect. Although the observed effect sizes ($d = 0.8$ vs. $d = 0.1$) might appear meaningfully different, the interaction test indicates that the observed discrepancy is compatible with sampling variability. The apparent contradiction arises because the comparison of two separate test outcomes is not equivalent to a direct test of the difference between effects. But this error frequently appears when effect sizes are compared across independent studies[@humphreys1980].
+
+```{r reg}
+reg_coef <- summary(fit)$coefficients
+rownames(reg_coef) <- c("Intercept", "Context","Treatment", "Context × Treatment")
+
+# kable(reg_coef, 
+#       digits = c(2, 2, 2, 3),
+#       col.names = c("Variable", "B", "SE", "t", "p"),
+#       caption = "",
+#       align = "rrrr")|>
+#    kable_styling(latex_options = "hold_position")
+
+```
+:::
+
+[^1]: Note equivalent to an interaction term in a regression analysis. In this case, the results are b = -5.62, SE = 3.80, t(96) = -1.48, p = 0.142. \*I will add a little about $t^2 = F$ when the numerator degrees of freedom = 1.\* see @humphreys1980, ...
+
+::: {style="text-align: justify"}
+# Testing differences between effect sizes
+
+In the example above the treatment effects are evaluated jointly through the Treatment × Context interaction rather than by comparing two separate estimates and significance tests. Effect sizes should also not be treated as fixed points but as estimates with sampling error that must be modelled jointly, so that the observed difference between them is evaluated relative to its uncertainty [@humphreys1980; @brandt2014; @anderson2016]. In an ANOVA, this uncertainty is accounted for by evaluating the treatment effects in a single model using a shared residual variance. The Treatment × Context interaction therefore tests whether the observed difference between effects is larger than would be expected from sampling variability alone. If two studies were similar enough in their design, outcome measure, and implementation, the raw data could be pooled and analysed in a single model with Study and Treatment as factors. The Study × Treatment interaction would then test whether the treatment effects differed across studies. However, in practice, individual participant data is often unavailable, or the studies differ sufficiently in their design or measurement that a single statistical model is not appropriate. Therefore, in most cases comparisons are based on the estimated effects and their sampling variances.
+
+A particularly salient context in which effect estimates are compared is replication studies. The most common definition of a successful replication is one where the same statistical test reaches the same significance decision as the original study [@anderson2016]. In a review of 50 replication studies published in 2013, Anderson and Maxwell [-@anderson2016] found that 44 (88%) relied on significance tests alone to determine replication success[^2]. Perhaps unintentionally, this narrow definition of replication success avoids addressing the main claim of a replication — whether the observed effect sizes are reproduced [@anderson2016]. Since individual significance tests do not provide a direct comparison between effect estimates, observing one statistically significant result and one non-significant result does not, by itself, indicate that the effects differ. Evidence for a difference requires directly comparing the estimates while accounting for their associated sampling uncertainty [@gelman2006; @morey2016; @humphreys1980].\thought{I think this could be moved to the introdtion}
+
+\thought{not sure if this is really needed}It is important to note that although within-study interactions and between-study comparisons formally test the same hypothesis, the interpretations differ. When a moderator is experimentally manipulated, an interaction may identify the effect of that moderator. When the comparison is between two studies, study identity is typically confounded with all other differences between the studies. A significant pairwise comparison therefore establishes disagreement between those study-specific effects but does not ordinarily identify its cause, i.e.:
 
 $$
-\Delta = \mu_1 - \mu_2
+\text{study identity} = \text{population} + \text{implementation} + \text{measurement} + \text{time} + \text{setting} +....
+$$
+:::
+
+[^2]: Some researchers compare effect estimates descriptively without formally testing whether the observed effects differed [@anderson2016]. As the example above illustrates, neither approach is adequate: a numerical difference between two effect sizes is uninformative, and the significance of each study does not address whether the two effects differ from each other. Without a direct test of the difference, one cannot determine whether an apparent discrepancy reflects a genuine difference between the effects or sampling variability.
+
+::: {style="text-align: justify"}
+When individual participant data are unavailable, effect estimates can still be compared using the reported estimates and their associated sampling variances. Rather than asking whether each study individually rejects the null hypothesis, the relevant question is whether the estimated effects differ from one another. Therefore, the null hypothesis is that the difference between the population effects equals zero. Let $\Delta = \theta_1-\theta_2$ denote the difference between the two population effect sizes. The null hypothesis is therefore $H_0: \Delta = 0$.
+
+The difference between two independent effect estimates can be evaluated using a Z-test(Wald test). Rather than testing each effect separately, the Z-test evaluates whether the observed difference between the estimates is larger than would be expected given their combined sampling uncertainty. Similar to an interaction test, this approach evaluates whether the difference between two estimated effects is greater than would be expected by chance. Using summary statistics instead of individual participant data, the test for the difference between two independent and approximately normally distributed effect sizes is [@Borenstein2009, chap 19, pg. 156]:
+
+$$
+z_{1-2} =  \frac{\hat{\Delta}}{SE(\hat{\Delta})}
+$$ {#eq-Zdiff}
+
+That is, the critical value for the difference between two effect sizes($z_{1-2}$), is calculated as the difference between the first effect size ($\theta_1$) and the second effect size ($\theta_2$), divided by the standard error of the difference between the two effect size $SE(\theta_1 - \theta_2)$.
+
+Since in our example we are looking at the mean difference[^3] (true population difference):
+
+$$
+\theta = \mu_T - \mu_C
 $$ {#eq-B_4.2}
 
-Assuming the two groups are independent, the study estimates $\Delta$ using the sample mean difference: i.e. $D = \bar{X}_1- \bar{X}_1$.
+(observed:) $$
+D = M_T - M_C
+$$
+
+$$
+z_{1-2} 
+= \frac{D_1 - D_2}{SE(D_1 - D_2)} 
+$$ {#eq-Zdiff2}
+
+Assuming the two effect size estimates are independent, the standard error is the square root of the sampling variance of their difference:
+
+$$
+SE(\hat{\Delta}) = SE(D_1 - D_2) = \sqrt{Var(D_1 - D_2)} = \sqrt{v_1 + v_2}
+$$ {#eq-SE_rootV}
 
 ```{r}
-ex1$D <- with(ex1, (X1 - X2))
+ex1$D <- with(ex1, (M_T - M_C))
 ```
+
+because in this case the effect size of interest is the raw mean difference standard error of the mean: $SE = \frac{\sigma}{\sqrt{n}}$, Let $\sigma^2$ denote the true population variance.
 
 Let $S_1$ and $S_2$ be sample standard deviations, $n_1$ and $n_2$ of the two groups.
 
-Let $\sigma^2$ denote the true population variance. If we assume that the population variance is the same in both groups then the variance of $D$ is
+If we assume that the population variance is the same in both groups then the observed/sample variance [@Borenstein2009] of $D$ is
 
 $$
-V_D = \frac{n_1 + n_2}{n_1n_2} \cdot S_{p}^2
-$$ {#eq-B_4.3}
-
-where
-
-$$
-S_{p} = \sqrt{\frac{(n_1 - 1)S_1^2 + (n_2 - 1)S_2^2}{n_1 + n_2 - 2}}
-$$ {#eq-B_4.4}
-
-```{r}
-ex1$S_p <- with(ex1, sqrt(((n1 - 1) * S1^2 + (n2 - 1) * S2^2) / (n1 + n2 - 2)))
-```
-
-@Borenstein2009 says "If we don’t assume that the two population standard deviations are the same, then the variance of D is"
-
-$$
-V_D = \frac{S_1^2}{n_1} + \frac{S_2^2}{n_2}
+v_D = \frac{S_T^2}{n_T} + \frac{S_C^2}{n_C}
 $$ {#eq-B_4.5}
 
-```{r}
-ex1$v.D <- with(ex1, (S1^2/ n1) +(S2^2/n2))
-```
-
-Under the equal-variance assumption, the common population variance is estimated using the pooled variance:
+From @tbl-summary **Variance for study 1:**
 
 $$
-V_D = \frac{S_p^2}{n_1} + \frac{S_p^2}{n_2} 
-    = S_p^2 \left( \frac{1}{n_1} + \frac{1}{n_2} \right) 
-    = S_p^2 \cdot \frac{n_1 + n_2}{n_1 n_2} 
+v_1 = \frac{S_{T1}^2}{n_{T1}} + \frac{S_{C1}^2}{n_{C1}}
+= \frac{5.92^2}{25} +\frac{11.16^2}{25} 
+= 6.38
 $$
 
-since:
+**Variance for Study 2:**
 
--   $Var(\bar{X}_1 - \bar{X}_2) = Var(\bar{X}_1) + Var(\bar{X}_2) - 2Cov(\bar{X}_1,\bar{X}_2)$ {eq-var.rules}
-
--   because the two groups are independent $2Cov(\bar{X}_1,\bar{X}_2) =0$
-
--   $Var(D) = Var(\bar{X}_1 - \bar{X}_2)$
+$$
+v_2 = \frac{S_{T2}^2}{n_{T2}}  + \frac{S_{C2}^2}{n_{C2}}
+= \frac{8.80^2}{25} + \frac{11.10^2}{25}
+= 8.03
+$$
 
 ```{r}
-ex1$v.D_pooled <- with(ex1, S_p^2 *((n1 + n2) / (n1 * n2))) 
+ex1$v.D <- with(ex1, (S_C^2/ n_C) +(S_T^2/n_T))
+```
+
+Once you have calculated your effect sizes of interest and your sample variances(). You can then calculate $z_{1-2}$:
+
+$$
+z_{1-2} 
+= \frac{D_1 - D_2}{\sqrt{v_1 + v_2}} 
+= \frac{7.00 - 1.38}{\sqrt{6.38 + 8.03}} 
+= 1.48
+$$
+
+Since $z_{1-2} = 1.48$, the two-tailed $p$-value is obtained by:
+
+$$
+p = 2 \times (1 - \Phi(|z|)) = 2 \times (1 - \Phi(1.48))
+$$
+
+where $\Phi$ is the cumulative distribution function of the standard normal distribution. In R:
+
+```{r echo=TRUE}
+compareES <- function(theta1, theta2, v1, v2){
+  Z <- (theta1 - theta2)/sqrt(v1 + v2)
+  p <- 2 * (1 - pnorm(abs(Z)))
+  
+  return(list(Z_diff = round(Z,3), 
+              p = round(p, 4)))
+}
+```
+
+For studies comparing two independent groups, this hypothesis can be tested using a t-test that directly compares the estimated mean differences across studies. Assuming that the population variances are equal and that the studies are sufficiently comparable in their measurement reliability and design, the standard error of the difference between the estimated effects is obtained from the principle that the variance of the difference between independent estimates equals the sum of their variances[^4] [@humphreys1980]. Using a pooled estimate of the common population variance, the test statistic is
+
+$$
+t_{1-2} = \frac{D_1-D_2}{s_p \sqrt{\frac{n_{1C} + n_{1T}}{n_{1C}n_{1T}} + \frac{n_{2C} + n_{2T}}{n_{2C}n_{2T}}}} 
+= \frac{\hat{\Delta}}{SE(\hat{\Delta})}
+$$ {#eq-Humphreys_4}
+
+```{r}
+t_test_diff_in_diff <- function(D1, D2, # with equal variances assumed)
+                                 S1C, S1T, S2C, S2T, 
+                                 n1C, n1T, n2C, n2T) {
+  
+  Sp <- sqrt(((n1C - 1)*S1C^2 + (n1T - 1)* S1T^2 + 
+                (n2C - 1)*S2C^2 + (n2T - 1)*S2T^2) / 
+               (n1C + n1T + n2C + n2T - 4))
+  #difference of differences
+  D_diff <- D1 - D2
+  
+  SE <- Sp * sqrt((n1C + n1T)/(n1C * n1T) + (n2C + n2T)/(n2C * n2T))
+  
+  t <- D_diff / SE
+  df <- n1C + n1T + n2C + n2T - 4
+  p <- 2 * (1 - pt(abs(t), df))
+  
+  list(t = round(t,2), df = df, p = round(p,3), 
+       Sp = Sp, D_diff = round(D_diff,2), SE = round(SE,2))
+}
+
+
+t_results <- t_test_diff_in_diff(D1 = ex1$D[1], ex1$D[2],
+                                 S1C = ex1$S_C[1], S1T = ex1$S_T[1],
+                                 S2C = ex1$S_C[2], S2T = ex1$S_T[2],
+                                 n1C = 25, n1T = 25, n2C = 25, n2T = 25)
+
 
 ```
 
-Comparing the results of using the `metafor` package and the Z test Using `escalc` function calculates various effect sizes and their corresponding sampling variances. In each of the cases below it is using the same formulas as defined above
+`r paste0(t_results$D_diff, ", t(96) = ", t_results$t, " p = ", t_results$p)` \thought{this is exactly the same as the results from the ANOVA and regression above}
+:::
 
-#### unpooled sd
+[^3]: In principle this can be any effect size. For this illustration we starting with the raw mean difference. In @sec-SMD the same technique is used for standardised mean difference (Cohen's d)
 
-`measure = "MD"`raw mean differences with homoscedastic population variances {#eq-B_4.3}
+[^4]: Using the variance of the difference of two random variables $Var(\theta_1-\theta_2)= Var(\theta_1)+Var(\theta_2)-2Cov(\theta_1,\theta_2)$. Since we assume the two effect size estimates are independent, $Cov(\theta_1,\theta_2)=0$, therefore $Var(\theta_1-\theta_2) = Var(\theta_1) + Var(\theta_2) = v_1+v_2.$
+
+::: {style="text-align: justify"}
+## Meta-analysis
+
+If one is familiar with meta-analysis, estimating effect size sampling variances will not be new. Like in the z-test, a meta-analysis compares study-level effect estimates while accounting for their sampling uncertainty. In a fixed-effect meta-analysis, the pooled estimate (the meta-analytic effect, $\bar{\theta}$) is the inverse-variance weighted average of the study effect estimates: $$
+\bar{\theta} = \frac{\sum^{k}_{i = 1}w_i{\theta_i} }{\sum_{i=1}^{k} w_i}
+$$ {#eq-harrer_4.3}
+
+where $w_i$ is the inverse of the effect size variance ($v_i$), $$ 
+w_i = \frac{1}{v_i} 
+$$ {#eq-wi}
+
+Cochran's $Q$ statistic tests whether the observed variation between effect estimates exceeds that expected from sampling variability alone, that is,
+
+$$
+H_0: \theta_1 = \dots = \theta_k = \theta
+$$
+
+The heterogeneity test asks the same question as the interaction test and the Z-test for comparing two independent effect estimates [@Borenstein2009]. As @cochran1954 originally asked, "Do the \[observed\] values of \[$\theta_i$\] agree among themselves within the limits of their experimental errors?" \thought{TO DO add page number}. The Q statistic is the weighted sum of squared deviations of the study effect estimates from the pooled estimate:
+
+$$
+\begin{aligned}
+Q &= \sum_{i=1}^{k} w_i (\theta_i - \bar{\theta})^2 
+\end{aligned}
+$$ {#eq-Q_general}
+
+For the case of two studies ($k=2$), Cochran's Q reduces to a comparison of the two effect estimates:
+
+$$
+Q = w_1 (\theta_1 - \bar{\theta})^2 +  w_2(\theta_2 - \bar{\theta})^2 
+$$ {#eq-Q_k2}
+
+and @eq-harrer_4.3 to:
+
+$$
+\bar{\theta} = \frac{w_1 \theta_1 + w_2 \theta_2}{w_1 + w_2}
+$$ {#eq-population_effect}
+
+Substituting @eq-population_effect and @eq-wi into @eq-Q_k2 gives us the simplified expression:
+
+$$
+Q = \frac{(\theta_1 - \theta_2)^2}{v_1 + v_2}
+$$ {#eq-Q_simplified}
+
+.... $Q = Z^2$
+
+p-value:
+
+$$
+p = 1 - F_{\chi^2}(Q, \text{df} = 1) 
+$$
+
+where $F_{\chi^2}$ is the cumulative distribution function of the chi-squared distribution
+
+from the example
+
+$$
+\begin{aligned}Q &= \frac{(D_1 - D_2)^2}{v_1 + v_2}    
+= \frac{(7.00 - 1.38)^2}{6.38 + 8.03}    
+= 2.19 \\[2ex]p &= 0.1387\end{aligned}
+$$
+
+In R:
+
+```{r echo=TRUE}
+Q_k2 <- function(theta1, theta2, v1, v2){
+  Q <- (theta1 - theta2)^2 /(v1 + v2)
+  p <- pchisq(Q, df = 1, 
+              lower.tail = FALSE)#<- upper tail P(Q>=crit)
+  
+  return(list(Q = round(Q,3), 
+              p = round(p, 4)))
+}
+```
+
+```{r}
+results_Q <- Q_k2(theta1 = ex1$D[1], theta2 = ex1$D[2], 
+          v1 = ex1$v.D[1], v2 = ex1$v.D[2])
+
+```
+
+In practice, you do not need to do any of this by hand. The `metafor` package [@viechtbauer2010]: first `escalc()` computes each study’s effect size and its sampling variance. You add the type of effect size you are interested in[^5], in this case raw mean differences (`measure = "MD"`) and the effect size variances are calculated using @eq-B_4.3:
 
 ```{r}
 raw_es <- escalc(measure = "MD",
-                 n1i = n1,
-                 n2i = n2,
-                 m1i = X1,
-                 m2i = X2, 
-                 sd1i = S1,
-                 sd2i = S2, 
+                 n1i = n_C,
+                 n2i = n_T,
+                 m1i = M_C,
+                 m2i = M_T, 
+                 sd1i = S_C,
+                 sd2i = S_T, 
                  data = ex1)
-
-raw_es|> select(D, v.D, yi, vi)|>
-  kable() |>
-  add_header_above(c(
-    "calculations above" = 2,
-    "escalc function" = 2
-  ))|>
-  kable_styling(latex_options = "hold_position")
-
 ```
 
 ```{r}
 fma.md <- rma(yi, vi, data = raw_es, method = "FE")
-fma.md
+```
+
+Q(df = 1) = 2.1924, p-val = 0.1387
+:::
+
+[^5]: this means for most effect sizes variances and bias corrections for the variance estimates can be added see @sec-SMD
+
+::: {style="text-align: justify"}
+# Do you have the power?
+
+The recommendations presented above imply that studies should not only be designed to detect their primary effects, but also to allow meaningful comparisons between effect estimates. A comparison between two effect sizes is only informative if it has sufficient statistical power to detect differences that are scientifically relevant. While, for the primary research, power analysis requires "a threshold for the smallest effect size considered of substantive importance and the sample size for a given level of significance" [@hedges2001, pg 225], if researchers intend to compare effect estimates across studies, contexts, or subgroups, the power to make these comparisons should be considered during study design. Just like the interaction test, the comparison of two independent effect estimates, and Cochran's Q test were shown to be statistically equivalent, the same equivalence extends to their statistical power. In each case, power is determined by the magnitude of the difference between the effect estimates relative to their combined sampling variance.
+
+Under the alternative $Q \sim \chi^2_1(\lambda)$ , the non-centrality parameter is
+
+$$
+\lambda = \frac{(\theta_1 - \theta_2)^2}{v_1+v_2}
+$$ {#eq-non_centrality}
+
+@eq-non_centrality shows that power depends (1) the difference between the effect estimates that the researcher wishes to detect (how much of a difference is worth detecting) and (2) the precision with which effects are estimated. The first reflects a decision about how much of a difference is meaningful to detect, while the second is determined by the sampling variance of the effect estimates. For raw mean differences, the sampling variance is
+
+$$
+v_i=\frac{\sigma_{Ci}^{2}}{n_{Ci}}+\frac{\sigma_{Ti}^{2}}{n_{Ti}}
+$$
+
+```{r power_function}
+comparison_power <- function(effect_difference, est_es =.5, 
+                  n1C, n1T, n2C, n2T, # cell sample sizes 
+                  sigma1C = 1 , sigma1T = 1, # cell sd's 
+                  sigma2C = 1, sigma2T = 1, 
+                  alpha = 0.05){
+  # from formula eq-B_4.5
+  v1 <- sigma1C^2 / n1C + sigma1T^2 / n1T
+  v2 <- sigma2C^2 / n2C + sigma2T^2 / n2T
+  V_total <- v1 + v2
+  
+  non_cent_mu <- effect_difference / sqrt(V_total)
+  
+  # for Q
+  chi_crit <- qchisq(1 - alpha, df = 1)
+  lambda <- effect_difference^2 / V_total
+  Q_power <- 1 - pchisq(chi_crit, df = 1, ncp = lambda)
+  
+  # T
+  # Welch-Satterthwaite df
+  numerator <- V_total^2
+  denominator <- (sigma1C^2/n1C)^2/(n1C-1) + (sigma1T^2/n1T)^2/(n1T-1) +
+    (sigma2C^2/n2C)^2/(n2C-1) + (sigma2T^2/n2T)^2/(n2T-1)
+  df <- numerator / denominator
+  
+  t_crit <- qt(1-alpha/2, df)
+  t_power <- pt(-t_crit, df=df, ncp=non_cent_mu) + (1 - pt(t_crit, df=df, ncp=non_cent_mu))
+
+  # F note F = t^2, df1=1
+  F_crit <- qf(1-alpha, df1=1, df2=df)
+
+  F_power <-1 - pf(F_crit, df1=1, df2=df, ncp= lambda)
+  
+  
+  #########
+  
+  # for Z
+  z_crit <- qnorm(1 - alpha / 2)
+  
+  Z_power <- pnorm(-z_crit, mean = non_cent_mu) + (1 - pnorm(z_crit, mean = non_cent_mu))
+  # Study 1
+  
+  delta1 <- est_es / sqrt(v1)
+  lambda1 <- delta1^2
+  
+  study1_Z_power_es.5 <-pnorm(-z_crit, mean = delta1) + (1 - pnorm(z_crit, mean = delta1))
+  
+  # Study 2: comp NCP
+  variance_ratio <- v2/v1
+  lambda12 <- lambda1 / (1 + variance_ratio)
+  delta12 <- sqrt(lambda12)
+  ## Comparison power
+  comparison_power_es.5 <- pnorm(-z_crit, mean = delta12) + (1 - pnorm(z_crit, mean = delta12))
+
+  data.frame(F_power = F_power*100,
+             t_power = t_power*100,
+             Z_power = Z_power*100,
+             study1_Z_power_es.5 = study1_Z_power_es.5 * 100,
+             comparison_power_es.5 = comparison_power_es.5 * 100,
+             Q_power = Q_power*100,
+             df=df)
+}
+
+```
+
+In the our example, the observed effects differed by 5.62 units, but this difference was not statistically significant (). We fail to reject the null hypothesis of equal effects. Perhaps the most common misinterpretation of this non-significant result would be that it demonstrates equivalence between studies. However, this result only indicates that the observed difference could have arisen through sampling variability. A non-significant test comparing two studies is often uninformative because the comparison itself is underpowered [@morey2016].
+
+```{r power_example}
+# grid with range of diffs and cell sample sizes 
+grid <- expand.grid(effect_difference = c((0:10)/10), # to fix the floating point :)
+                    cell_n = seq(10, 400))
+
+res <- cbind(grid, comparison_power(effect_difference = grid$effect_difference,
+                             n1C = grid$cell_n, n1T = grid$cell_n,
+                             n2C = grid$cell_n, n2T = grid$cell_n))
+
+res <- res |>
+  mutate(n_per_study = 2 * cell_n,
+         n_total     = 4 * cell_n)
+##### for both plots
+d_colours <- brewer.pal(9, "BuGn")
+
+```
+
+```{r power_plot}
+#|fig-label: "fig-power_plot"
+#|fig-cap: "to be added"
+#|fig-height: 6
+
+cohens_demons <- c(0.1, 0.2, 0.5, 0.8, 1)
+power_plot <- subset(res, effect_difference %in% cohens_demons)
+
+# plot labes 
+label <- power_plot |>
+  group_by(effect_difference) |>
+  filter(cell_n == 70) |>
+  ungroup()
+power_example <- subset(res, effect_difference == 0.5)
+target <- power_example[which.min(abs(power_example$Z_power - 80)), ]
+
+
+ggplot(power_plot, aes(x = n_per_study, y = Z_power,
+                       colour = factor(effect_difference))) +
+  geom_line() +
+  scale_colour_manual(values = c(d_colours[c(4, 5, 7, 9)], "black"),
+                      guide = "none") +
+  geom_text_repel(data = label,
+                  aes(label = paste("d =", effect_difference)),
+                  hjust = 1, 
+                  vjust = -0.5,
+                  segment.colour = NA) +
+  # for the example
+  geom_hline(yintercept = 80, linetype = 2) +
+  geom_point(data = target) +
+  geom_text_repel(data = target, aes(label = paste0("N = ", n_per_study)),
+          hjust = -0.2, vjust = 1.5)+
+##
+  scale_y_continuous(breaks=seq(0, 100, 20)) +
+  scale_x_continuous(limits = c(0, max(res$n_per_study) + 5), expand = c(0, 0)) +
+  labs(x = "Sample size per study",
+       y = "Power (%)")
+
+```
+
+@fig-power_plot, shows the statistical power to detect a difference of various magnitudes as a function study sample size. The plot illustrates the consequence of comparing effect estimates: even large differences between studies require considerable sample sizes before they can be detected reliably. For simplicity, the outcome standard deviation is set to one, so $\Delta$ is expressed in standard deviation units. A difference of 1 implies that the estimated treatment effect in one study is one standard deviation larger than in the other. However, even a differences of this magnitude require relatively large sample sizes to detect reliably (for 80% power around 60 participants in each study). In the case of our example, lets say difference of 0.5 units is practicality meaningful and therefore should be used to design two subsequent studies. For this difference, each study needs around 252 participants to achieve 80% power. Consequently, studies with substantially smaller sample sizes (like in the example) would have a high probability of failing to detect a difference of this magnitude if it truly existed. The figure also highlights the issue that in a lot of situations, smaller differences can also be scientifically interesting however the sample sizes needed to reliably detect those differences is enormous.
+
+The previous calculations also assume that both studies can be designed prospectively with sufficient precision. In practice, however, researchers often compare a new study with an already completed experiment whose sample size and therefore sampling variance is fixed. One might think here that the solution is simply increasing the sample size of the replication to overcome the uncertainty associated with the original study. However, the power of the comparison is constrained by the precision of the original effect estimate [@morey2016]. The limitation follows from the variance of the difference between two independent effect estimates $Var(D_1 - D_2) = v_1 + v_2$. As discussed previously, the variance of the estimated difference is the sum of the variance from both studies. Increasing the sample size of the replication reduces $v_2$. That is to say, as the second studies sample size becomes arbitrarily large the uncertainty around the estimate becomes effectively 0 ($v_2 \to 0$). However $v_1$ is fixed by the original study. Therefore as $v_2 \to 0$ the uncertainty becomes $v_1$.
+
+$$
+\lim_{N_2 \to \infty} Var(D_1 -D_2) = v_1
+$$
+
+In other words, no amount of additional data collected in the replication can make up for precision of the original estimate. Studies with small sample sizes therefore impose a limit on the power to detect disagreement between studies [@morey2016].
+
+```{r warning=FALSE}
+#|fig.label: "diff_ci"
+#|fig.cap: "As the sample size in the second study increases, the confidence interval narrows but approaches a limit determined by the uncertainty in the frist study."
+
+estimate <- 0.5 # expected difference of difference 
+
+diff_ci <- expand.grid(n_original = c(25, 50, 100, 200, 400),
+                       n_replication = seq(20, 1000, by = 10)) |>
+  mutate(SE = sqrt(2 / n_original + 2 / n_replication),
+         lower = estimate - 1.96 * SE,
+         upper = estimate + 1.96 * SE)
+
+ci_bar <- subset(diff_ci, n_original == 400 & n_replication == 1000)
+
+ggplot(diff_ci) + 
+  #envelope 
+  geom_ribbon(aes(ymin = lower, ymax = upper, x = n_replication),
+              fill = "grey80", alpha = 0.6) + 
+  geom_errorbar(data = ci_bar, 
+                aes(x = n_replication, ymin = lower, ymax = upper),
+                colour = "grey40", 
+                width = 50,
+                inherit.aes = FALSE) +
+    
+  # expected difference 
+  geom_hline(yintercept = estimate, 
+             colour = d_colours[7], linetype = "dashed") + 
+  scale_y_continuous(breaks=seq(-0.5, 1.5, 0.25)) +
+  
+  facet_wrap(~ n_original, nrow = 1, 
+             labeller = labeller(n_original = function(x) paste("Study1 n =", x))) + 
+  
+  labs(x = "Study2 sample size", 
+       y = "Difference in effect size") 
+
+```
+
+Figure @diff_ci shows the 95% confidence interval for the difference between two effect estimates as the replication sample size increases. However, even when the first study has a sample size of 400 and the second 1000, the 95% confidence interval for a difference of 0.5 standard deviations is `r paste0(round(ci_bar$lower, 2),", ", round(ci_bar$upper, 2))`. Even with these relatively large sample sizes, the data remain compatible with a broad range of differences between the studies.
+:::
+
+::: {style="text-align: justify"}
+# Testing effect size consistency - Equivalence testing
+
+As discussed above, researchers often interpret a non-significant comparison between effect estimates as evidence that the effects are "the same." However, a non-significant difference test cannot support this conclusion. Failure to reject the null hypothesis, $H_0: \Delta = 0$ indicates the data do not provide sufficient evidence that the effect estimates differ. It does not establish that any remaining difference is too small to be scientifically important. Rather than asking whether the true difference is exactly zero, an equivalence test asks whether any remaining difference is large enough to matter.
+
+$$
+H_0: |\Delta|\geq \delta
+$$
+
+where $\delta$ denotes the smallest effect size of interest (SESOI). Rejecting the null hypothesis therefore allows the researcher to conclude that any remaining difference is smaller than the pre-specified equivalence bound.
+
+Unlike conventional hypothesis testing, equivalence testing cannot be performed without first specifying a SESOI. This quantity is inherently context dependent and should reflect the largest difference that would still be regarded as practically unimportant.
+
+### How small a difference could two studies rule out?
+
+The specification of the SESOI is context specific and should be made by the experts in the field. Instead here we will look at the "critical value" so assess the power of an equivalence test for the difference between two observed effect sizes: i.e. given the precision of your study, what claims about similarity are you capable of making? Studies with low precision can only exclude very large differences and are therefore incapable of supporting strong claims of similarity. Increasing the precision of the comparison requires reducing the sampling variance, which in practice almost always means increasing the sample size.
+
+\thought(I don't think any of the notation works, I will look at Ambra's paper on the critical value to fix this part)
+
+$$
+-\delta < \Delta < \delta
+$$ $$
+P(\text{TOST success})
+=
+P\left(\hat{\Delta} > -\delta + cSE(\hat{\Delta})\right)
+\times
+P\left(\hat{\Delta} < \delta - cSE(\hat{\Delta})\right)
+$$
+
+$$
+\Delta = \theta_2-\theta_1
+$$
+
+$$
+SE(\hat{\Delta})=\sqrt{v_1+v_2}
+$$
+
+$$
+c = t_{1-\alpha,df}
+$$
+
+precision-limited equivalence bound
+
+```{r}
+## I don't have much confidence in this funtion: 
+detectable_eqivilence_bound <- function(target_power = 0.80, 
+                                        true_difference = 0, # Est. from Schuirmann
+                                        n1C, n1T, n2C, n2T,
+                                        sigma1C = 1, sigma1T = 1,
+                                        sigma2C = 1, sigma2T = 1,
+                                        alpha = 0.05){
+  
+  v1 <- sigma1C^2/n1C + sigma1T^2/n1T
+  v2 <- sigma2C^2/n2C + sigma2T^2/n2T
+  V <- v1 + v2
+  SE <- sqrt(V)
+  
+  # Welch-Satterthwaite df
+  numerator <- V^2
+  denominator <- (sigma1C^2/n1C)^2/(n1C-1) +
+    (sigma1T^2/n1T)^2/(n1T-1) +
+    (sigma2C^2/n2C)^2/(n2C-1) +
+    (sigma2T^2/n2T)^2/(n2T-1)
+  
+  df <- numerator / denominator
+  
+  
+  # TOST power function
+  tost_power <- function(delta){
+
+  tcrit <- qt(1-alpha, df)
+  # non-centrality parameters
+  ncp_lower <- (true_difference + delta)/SE
+  ncp_upper <- (true_difference - delta)/SE
+  
+  #probability of rejecting the hypothesises
+  lower_power <- 1 - pt(tcrit, df = df, ncp = ncp_lower)
+  upper_power <- pt(-tcrit, df = df, ncp = ncp_upper)
+  
+  #Overall probability of concluding equivalence is joint probability that both tests reject? maybe
+  lower_power * upper_power
+  }
+  
+  upper <- SE
+  while (tost_power(upper) < target_power) {
+    upper <- upper * 2
+  }
+  #finding the bound that gives us the desired power
+  result <- uniroot(function(delta) tost_power(delta) - target_power,
+                    interval = c(0, upper))
+  
+  data.frame(
+    critical_value = result$root,
+    SE = SE,
+    df = df
+  )
+}
 ```
 
 ```{r}
-# Z-test
-compareES(ES1 = ex1$D[1], 
-          ES2 = ex1$D[2], 
-          v1 = ex1$v.D[1], 
-          v2 = ex1$v.D[2])
+plot_dat <- expand.grid(
+  n_original = c(25, 50, 100, 200, 400),
+  n_replication = seq(20, 1000, by = 10)
+) |>
+  rowwise() |>
+  mutate(
+    detectable_bound_upper = detectable_eqivilence_bound(
+      target_power = 0.80,
+      n1C = n_original, n1T = n_original,
+      n2C = n_replication, n2T = n_replication,
+      sigma1C = 1, sigma1T = 1,
+      sigma2C = 1, sigma2T = 1)$critical_value
+  ) |>
+  ungroup() |>
+  mutate(detectable_bound_lower = 0 - detectable_bound_upper)
 
+ggplot(plot_dat)+
+  geom_ribbon(aes(ymin = detectable_bound_lower, ymax = detectable_bound_upper, x = n_replication),
+              fill = "grey80", alpha = 0.6) +
+  facet_wrap(~n_original)
 ```
+:::
 
-#### pooled sd
+::: {style="text-align: justify"}
+# Discussion
+
+Effect-size comparisons are essential for theories building... predict changes in magnitude of an effect across populations, contexts, or implementations. Such comparisons can improve theoretical specificity by identifying moderators, ...., and quantifying the conditions where an effect becomes stronger, weaker, or changes direction. However, these goals are poorly served by comparing two study estimates alone. Even when the underlying study-specific effects are identical the observed estimates are expected to differ because of sampling variation. Establishing either a difference or equivalence between two effects requires substantially more information than typical studies provide. Like @kondzic2026 we showed here that detecting a SMD between studies of 0.5 with 80% power requires approx 300 participants per study.
+
+When the underlying effects genuinely differ, a pairwise test can establish only that the difference is unlikely to be explained by sampling variation alone. - “knowing that A is greater than B is not enough”; theory requires knowledge of the magnitude of the difference and the uncertainty associated with that estimate [@kirk1996, pg].
+
+The question should therefore move away from "Do effects vary?" to "How much, why and under which conditions do effects vary?"
+
+To address these questions requires research which can estimate systematic effect variation. \thought{something here about cooradinated efforts so that...}Researchers should manipulate or sample theoretically proposed moderators, obtain repeated observations across levels, and report sufficient information for cumulative analysis. Meta-regression provides one framework for investigating effect variation: rather than testing whether heterogeneity is present, this can estimate the direction and magnitude of associations between study features (moderators) and effect sizes, and estimates the residual heterogeneity left unexplained by the moderators . Individual-participant-data meta-analysis can test participant-level moderators more directly, while network meta-analysis and network meta-regression can estimate comparative effects across multiple interventions, doses, or implementations. -\> These methods require transparent reporting and sharing of effect estimates, sampling variances, design characteristics, intervention details, analysis, and, participant-level data.
+
+\newpage
+:::
+
+# Supplementary Material {#sec-supplement}
+
+## Raw mean difference pool variances {#sec-sup-poolvar}
+
+One can also pool variances under the equal-variance assumption, in this case the variance would be:
+
+$$
+v_{D_p} = \frac{S_p^2}{n_C} + \frac{S_p^2}{n_T} 
+    = S_p^2 \left( \frac{1}{n_C} + \frac{1}{n_T} \right) 
+    = S_p^2 \cdot \frac{n_C + n_T}{n_C n_T} 
+$$ {#eq-B_4.3}
+
+where $S_p$ is the same pooled mean as calculated above
+
+**Study 1:**
+
+$$
+S_{1p}^2 
+= \frac{(24)(11.16^2) + (24)(5.92^2)}{48} 
+= 79.80
+$$
+
+$$
+v_{1D_p} 
+    = 79.80 \cdot \frac{25 + 25}{25 \cdot 25}
+    = 79.80 \cdot 0.08
+    = 6.38
+$$ **Study 2:**
+
+$$
+S_{2p}^2 
+= \frac{(24)(11.10^2) + (24)(8.80^2)}{48} 
+= 100.33
+$$
+
+$$
+v_{2D_p}  
+    = 100.33 \cdot \frac{25 + 25}{25 \cdot 25}
+    = 100.33 \cdot 0.08
+    = 8.03
+$$
 
 ```{r}
-# Z-test
-compareES(ES1 = ex1$D[1], 
-          ES2 = ex1$D[2], 
-          v1 = ex1$v.D_pooled[1], 
-          v2 = ex1$v.D_pooled[2])
+raw_es$S_p <- with(ex1, sqrt(((n_C - 1) * S_C^2 + (n_T - 1) * S_T^2) / 
+                            (n_C + n_T - 2)))
+raw_es$v.D_pooled <- with(raw_es, S_p^2 *((n_C + n_T) / (n_C * n_T))) 
 ```
 
-**(In @Borenstein2009 this is exactly true I will fix this later so that it is)**
+In this case, formulas @eq-B_4.5 and @eq-B_4.3 give identical results. As @Borenstein2009 points out, when the sample sizes are equal ($n_1 = n_2$), the pooled variance estimator simplifies to the arithmetic mean of the two sample variances, making the pooled and unpooled formulas algebraically equivalent regardless of whether the observed sample variances differ.
 
-The formulas (4.3) and (4.5) give identical results, @Borenstein2009 points out that this only happens when the sample sizes and variance estimates are equal across the two groups. Note observed sample variances differ $(S1^2 \ne S2^2)$, But because the group sample sizes are equal (n1 = n2), the pooled variance estimator simplifies to the average of the two sample variances, making the pooled and unpooled formulas algebraically equivalent.
+## Metafor vs "manual" {#sec-sup-metafor_match}
 
-## STANDARDIZED MEAN DIFFERENCE
+```{r}
+raw_es|> select(D, v.D, v.D_pooled,  yi, vi)|>
+  kable() |>
+  add_header_above(c(
+    "calculations above" = 3,
+    "escalc function" = 2
+  ))|>
+  kable_styling(latex_options = "hold_position")
+```
 
-When studies measure the same construct using different continuous scales, the raw mean difference is not directly comparable across studies (i.e., outcome measures across studies are all linear transformations of one another). In this case, the effect can be standardized by dividing the mean difference by the within-group standard deviation. Assuming equal population standard deviations ($\sigma_1 = \sigma_2 = \sigma$), the population standardized mean difference is:
+## t converges to Z as df increases {#sec-sup-t_converges_z}
+
+\thought{I find this really neat, maybe for the apendix}
+
+power for F/t are of course the same and Z and Q are the same. as n increases the distributions converge
+
+```{r}
+ggplot(subset(power_plot, effect_difference %in% cohens_demons ), 
+       aes(df, Z_power - t_power, colour = factor(effect_difference))) +
+  geom_line() +
+  labs(y = "Difference in power (Z − t)") 
+
+```
+
+## superpower
+
+```{r}
+library(Superpower)
+
+# Diff between treatment effects 
+diff_grid <- (0:10)/10 # to fix the floating point :)
+
+# n
+n_grid = seq(10, 1000, by = 10)
+
+
+# Average treatment effect
+avg_effect <- 0.5
+
+power_results <- map_dfr(diff_grid, function(delta){
+    D1 <- avg_effect + delta/2
+    D2 <- avg_effect - delta/2
+    map_dfr(n_grid, function(n){
+      design <- ANOVA_design(design = "2b*2b",
+                             n = n,
+                             mu = c(0, D1,0, D2),
+                             sd = 1,
+                             r = 0, plot = FALSE)
+
+      p <- power_twoway_between(design, alpha_level = 0.05)
+
+      data.frame(interaction = delta,
+                 D_context1 = D1,
+                 D_context2 = D2,
+                 cell_n = n,
+                 F_superpower = p$power_AB) # percentage
+      })
+    })
+```
+
+# Choice of effect size
+
+#### **Standardized mean difference** {#sec-SMD}
+
+(TO Do: Add why you end up in this mess: different scales, no information)
+
+link back to this "Standardisation removes the original measurement units and expresses effects relative to sample variability. This practice is promoted because it is assumed to facilitate comparisons across studies that use different measurement scales. For example, when one study reports a one-point difference on a 5-point Likert scale and another reports a two-point difference on a 13-point scale, the raw differences are not directly comparable [@vanhove2015; @baguley2009]."
+
+When studies measure the same construct using different "continuous scales", the raw mean difference is not directly comparable across studies (i.e., outcome measures across studies are all linear transformations of one another). In this case, the effect can be standardized by dividing the mean difference by the within-group standard deviation. Assuming equal population standard deviations ($\sigma_1 = \sigma_2 = \sigma$), the population standardized mean difference is:
 
 $$
 \delta = \frac{\mu_1 - \mu_2}{\sigma}
@@ -296,24 +862,28 @@ $$ {#eq-B_4.17}
 from studies that used two independent groups the standardized mean difference ($\delta$) is estimated with:
 
 $$ 
-d = \frac{\bar{X}_1 - \bar{X}_2}{S_p} 
-$$ {#eq-B_4.18}
+d = \frac{M_1 - M_2}{S_p} 
+$$ {#eq-B_4.18} where
 
--\> $S_p$ here is the same pooled mean as calculated above #eq-B_4.4
+$$
+S_{p} = \sqrt{\frac{(n_C - 1)S_C^2 + (n_T - 1)S_T^2}{n_C + n_T - 2}}
+$$ {#eq-S_p}
 
 ```{r}
+ex1$S_p <- with(ex1, sqrt(((n_C - 1) * S_C^2 + (n_T - 1) * S_T^2) / 
+                            (n_C + n_T - 2)))
 ex1$d  <- with(ex1, D/S_p)
 ```
 
 #### Estimating the standard error of Cohens d
 
-In the numerator, $\bar{X}_1$ and $\bar{X}_2$ are the sample means in the two groups. In the denominator $S_p$ is the within-groups standard deviation, pooled across groups,
+In the numerator, $M_1$ and $M_2$ are the sample means in the two groups. In the denominator $S_p$ is the within-groups standard deviation, pooled across groups,
 
 The variance of $d$ has two components:
 
 $$ 
-V_d = \underbrace{\frac{n_1 + n_2}{n_1 n_2}}_{\text{uncertainty in } \bar{X}_1 - \bar{X}_2} + \underbrace{\frac{d^2}{2(n_1 + n_2)}}_{\text{uncertainty in } S_p} 
-$$ {#eq-B_4.20}
+V_d = \underbrace{\frac{n_1 + n_2}{n_1 n_2}}_{\text{uncertainty in } M_1 - M_2} + \underbrace{\frac{d^2}{2(n_1 + n_2)}}_{\text{uncertainty in } S_p} 
+$$
 
 (1) Uncertainty in the mean difference: If the population standard deviation $\sigma$ was known then:
 
@@ -335,15 +905,15 @@ $$
 \end{aligned} 
 $$
 
-In practice, the population standard deviation $\sigma$ is unknown and must be estimated using $S_p$. This means that $d$ is not only affected by sampling variability in the mean difference, but also by sampling variability in the denominator $S_p$. This second source of variability arises from the fact that d is a ratio estimator rather than a simple linear transformation of the sample means. An approximate expression due to estimating $S_p$ is
+In practice, the population standard deviation $\sigma$ is unknown and must be estimated using $S_p$. This means that $d$ is not only affected by sampling variability in the raw mean difference, but also by sampling variability in the denominator $S_p$. This second source of variability arises from the fact that d is a ratio estimator rather than a simple linear transformation of the sample means. An approximate expression due to estimating $S_p$ is
 
 $$
 \frac{d^2}{2(n_1 + n_2)} 
 $$
 
 ```{r}
-ex1$v.d <- with(ex1, (n1 + n2) / (n1 * n2) +
-                    (d^2) / (2 * (n1 + n2)))
+ex1$v.d <- with(ex1, (n_C + n_T) / (n_C * n_T) +
+                    (d^2) / (2 * (n_C + n_T)))
 ```
 
 ------------------------------------------------------------------------
@@ -361,8 +931,8 @@ still working on how to explain this
 ```{r}
 smd_es <- escalc(measure = "SMD",
                  correct = FALSE, # {#eq-B_4.20} otherwise Hedges'g correction applied
-                 n1i = n1,
-                 n2i = n2,
+                 n1i = n_C,
+                 n2i = n_T,
                  di = d, 
                  data = ex1)
 
@@ -383,22 +953,6 @@ fma.smd_es <- rma(yi, vi, data = smd_es, method = "FE")
 fma.smd_es
 ```
 
-```{r}
-# Z-test
-compareES(ES1 = ex1$d[1], 
-          ES2 = ex1$d[2], 
-          v1 = ex1$v.d[1], 
-          v2 = ex1$v.d[2])
-```
-
-# Examples
-
-# Consider Power
-
-# Equivalence Testing (TOST)
-
-4.\
-4.1 Motivation\
-4.2 Hypotheses\
-4.3 Interpretation\
-4.4 Choosing Δ
+::: {style="text-align: justify"}
+# References
+:::

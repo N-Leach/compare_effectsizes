@@ -5,17 +5,25 @@ manuscript:
   article: index.qmd
 
 format:
+  pdf:
+    toc: false
+    colorlinks: true
+    notebook-links: false
+    linestretch: 1.5
+    geometry:
+      - left=2cm
+      - right=4cm
+      - top=2cm
+      - bottom=2cm
+    include-in-header: tex-header.tex
   html:
     comments:
       hypothesis: true
-  docx: default
-  jats: default
-
-  # (other formats)
-  # pdf: default
 
 execute:
-  freeze: true
+  warning: false
+  message: false
+  echo: true
 
 editor: visual
 
